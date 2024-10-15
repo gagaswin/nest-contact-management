@@ -1,5 +1,5 @@
 import { Contact } from 'src/app/contact/entities/contact.entity';
-import { Column, Entity, Generated, OneToMany, PrimaryColumn } from 'typeorm';
+import { Column, Entity, OneToMany, PrimaryColumn } from 'typeorm';
 
 @Entity({ name: 'user' })
 export class User {
@@ -12,8 +12,7 @@ export class User {
   @Column({ name: 'name', type: 'varchar', length: 100 })
   name: string;
 
-  @Column({ name: 'token', type: 'uuid', nullable: true })
-  @Generated('uuid')
+  @Column({ name: 'token', type: 'varchar', nullable: true })
   token: string;
 
   @OneToMany(() => Contact, (contact) => contact.user)
