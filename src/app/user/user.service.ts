@@ -19,7 +19,6 @@ import {
 } from './dto/login-user.dto';
 import { v4 as uuidv4 } from 'uuid';
 import { GetUserResponseDto } from './dto/get-user.dto';
-import { WebResponse } from '../web-response';
 import { LogoutUserResponseDto } from './dto/logout-user';
 
 @Injectable()
@@ -131,31 +130,14 @@ export class UserService {
       token: null,
     });
 
-    let message: string = 'Logout failed';
+    let isLogout: boolean = false;
     if (result.affected && result.affected > 0) {
-      message = 'Logout success';
+      isLogout = true;
     }
 
     return {
-      name: user.name,
       username: user.username,
-      message: message,
+      isLogout: isLogout,
     };
-  }
-
-  findAll() {
-    return `This action returns all user`;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
-  }
-
-  update(id: number, updateUserRequestDto: UpdateUserRequestDto) {
-    return `This action updates a #${id} user`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} user`;
   }
 }

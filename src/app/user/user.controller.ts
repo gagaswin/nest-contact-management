@@ -1,12 +1,4 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-} from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Delete } from '@nestjs/common';
 import { UserService } from './user.service';
 import {
   RegisterUserRequestDto,
@@ -24,6 +16,7 @@ import {
 import { Auth } from 'src/common/auth.decorator';
 import { User } from './entities/user.entity';
 import { GetUserResponseDto } from './dto/get-user.dto';
+import { LogoutUserResponseDto } from './dto/logout-user';
 
 @Controller('/api/users')
 export class UserController {
@@ -72,33 +65,12 @@ export class UserController {
   }
 
   @Delete('/current')
-  async logoutUser(@Auth() user: User): Promise<WebResponse<boolean>> {
-    await this.userService.logoutUser(user);
+  async logoutUser(
+    @Auth() user: User,
+  ): Promise<WebResponse<LogoutUserResponseDto>> {
+    const result = await this.userService.logoutUser(user);
     return {
-      data: true,
+      data: result,
     };
-  }
-
-  @Get()
-  findAll() {
-    return this.userService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.userService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(
-    @Param('id') id: string,
-    @Body() updateUserRequestDto: UpdateUserRequestDto,
-  ) {
-    return this.userService.update(+id, updateUserRequestDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.userService.remove(+id);
   }
 }

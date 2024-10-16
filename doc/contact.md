@@ -12,8 +12,8 @@ Request Body:
 
 ```json
 {
-  "first_name": "Gagas",
-  "last_name": "WIN",
+  "firstName": "Gagas",
+  "lastName": "WIN",
   "email": "gagaswahyuin@gmail.com",
   "phone": "099999999999"
 }
@@ -25,8 +25,8 @@ Response Body:
 {
   "data": {
     "id": 1,
-    "first_name": "Gagas",
-    "last_name": "WIN",
+    "firsName": "Gagas",
+    "lasName": "WIN",
     "email": "gagaswahyuin@gmail.com",
     "phone": "099999999999"
   }
@@ -47,8 +47,8 @@ Response Body:
 {
   "data": {
     "id": 1,
-    "first_name": "Gagas",
-    "last_name": "WIN",
+    "firstName": "Gagas",
+    "lastName": "WIN",
     "email": "gagaswahyuin@gmail.com",
     "phone": "099999999999"
   }
@@ -67,8 +67,8 @@ Request Body:
 
 ```json
 {
-  "first_name": "Gagas",
-  "last_name": "WIN",
+  "firstName": "Gagas",
+  "lastName": "WIN",
   "email": "gagaswahyuin@gmail.com",
   "phone": "099999999999"
 }
@@ -80,8 +80,8 @@ Response Body:
 {
   "data": {
     "id": 1,
-    "first_name": "Gagas",
-    "last_name": "WIN",
+    "firstName": "Gagas",
+    "lastName": "WIN",
     "email": "gagaswahyuin@gmail.com",
     "phone": "099999999999"
   }

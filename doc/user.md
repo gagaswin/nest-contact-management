@@ -138,6 +138,9 @@ Response Body (Success):
 
 ```json
 {
-  "data": true
+  "data": {
+    "username": "gagaswin",
+    "isLogout": true
+  }
 }
 ```

@@ -1,15 +1,46 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+} from '@nestjs/common';
 import { ContactService } from './contact.service';
-import { CreateContactDto } from './dto/create-contact.dto';
+import { ContactResponseDto, CreateContactRequestDto } from './dto/contact.dto';
 import { UpdateContactDto } from './dto/update-contact.dto';
+import { Auth } from 'src/common/auth.decorator';
+import { User } from '../user/entities/user.entity';
+import { WebResponse } from '../web-response';
 
-@Controller('contact')
+@Controller('/api/contacts')
 export class ContactController {
   constructor(private readonly contactService: ContactService) {}
 
   @Post()
-  create(@Body() createContactDto: CreateContactDto) {
-    return this.contactService.create(createContactDto);
+  async createContact(
+    @Auth() user: User,
+    @Body() createContactDto: CreateContactRequestDto,
+  ): Promise<WebResponse<ContactResponseDto>> {
+    const result = await this.contactService.createContact(
+      user,
+      createContactDto,
+    );
+    return {
+      data: result,
+    };
+  }
+
+  @Get('/:contactId')
+  async getContact(
+    @Auth() user: User,
+    @Param('contactId') contactId: string,
+  ): Promise<WebResponse<ContactResponseDto>> {
+    const contact = await this.contactService.getContact(user, contactId);
+    return {
+      data: contact,
+    };
   }
 
   @Get()
