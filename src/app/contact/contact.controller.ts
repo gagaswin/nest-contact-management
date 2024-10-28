@@ -6,13 +6,18 @@ import {
   Patch,
   Param,
   Delete,
+  Put,
+  Query,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { ContactService } from './contact.service';
 import { ContactResponseDto, CreateContactRequestDto } from './dto/contact.dto';
-import { UpdateContactDto } from './dto/update-contact.dto';
+import { UpdateContactRequestDto } from './dto/update-contact.dto';
 import { Auth } from 'src/common/auth.decorator';
 import { User } from '../user/entities/user.entity';
 import { WebResponse } from '../web-response';
+import { RemoveContactResponseDto } from './dto/remove-contact.dto';
+import { SearchContactRequestDto } from './dto/search-contact.dto';
 
 @Controller('/api/contacts')
 export class ContactController {
@@ -43,23 +48,50 @@ export class ContactController {
     };
   }
 
+  @Patch('/:contactId')
+  async updateContact(
+    @Auth() user: User,
+    @Param('contactId') contactId: string,
+    @Body() updateContactRequestDto: UpdateContactRequestDto,
+  ): Promise<WebResponse<ContactResponseDto>> {
+    updateContactRequestDto.id = contactId;
+    const resultUpdate: ContactResponseDto =
+      await this.contactService.updateContact(user, updateContactRequestDto);
+    return {
+      data: resultUpdate,
+    };
+  }
+
+  @Delete('/:contactId')
+  async removeContact(
+    @Auth() user: User,
+    @Param('contactId') contactId: string,
+  ): Promise<WebResponse<RemoveContactResponseDto>> {
+    const removeContact = await this.contactService.removeContact(
+      user,
+      contactId,
+    );
+    return {
+      data: removeContact,
+    };
+  }
+
   @Get()
-  findAll() {
-    return this.contactService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.contactService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateContactDto: UpdateContactDto) {
-    return this.contactService.update(+id, updateContactDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.contactService.remove(+id);
+  async searchContacts(
+    @Auth() user: User,
+    @Query('name') name?: string,
+    @Query('email') email?: string,
+    @Query('phone') phone?: string,
+    @Query('page', new ParseIntPipe({ optional: true })) page: number = 1,
+    @Query('size', new ParseIntPipe({ optional: true })) size: number = 10,
+  ): Promise<WebResponse<ContactResponseDto[]>> {
+    const contacts = this.contactService.searchContact(user, {
+      name,
+      email,
+      phone,
+      page,
+      size,
+    });
+    return contacts;
   }
 }
