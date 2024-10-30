@@ -29,16 +29,15 @@ export class ContactService {
     };
   }
 
-  private async toCheckContactExist(
-    user: User,
-    contactId: string,
-  ): Promise<Contact> {
+  async toCheckContactExist(user: User, contactId: string): Promise<Contact> {
     const contact: Contact = await this.contactRepository.findOneBy({
       id: contactId,
       user: user,
     });
 
-    if (!contact) throw new HttpException('Contact is not found', 404);
+    if (!contact) {
+      throw new HttpException('Contact is not found', HttpStatus.NOT_FOUND);
+    }
 
     return contact;
   }
@@ -131,11 +130,11 @@ export class ContactService {
   ): Promise<RemoveContactResponseDto> {
     const contact: Contact = await this.toCheckContactExist(user, id);
 
-    const isRemove: boolean = true;
     const removeContact = await this.contactRepository.delete({
       user: user,
       id: contact.id,
     });
+
     if (removeContact.affected === 0) {
       throw new HttpException(
         'Failed to delete contact',
@@ -145,7 +144,7 @@ export class ContactService {
 
     return {
       firstName: contact.firstName,
-      isRemove: isRemove,
+      isRemove: true,
     };
   }
 
@@ -195,7 +194,7 @@ export class ContactService {
     console.info(contacts);
 
     return {
-      data: contacts,
+      data: contacts.map((contact) => this.toContactResponse(contact)),
       paging: {
         current_page: page,
         size: size,

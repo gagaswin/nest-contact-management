@@ -69,7 +69,7 @@ export class UserService {
         loginUserRequestDto,
       );
 
-    let user: User = await this.userRepository.findOneBy({
+    const user: User = await this.userRepository.findOneBy({
       username: loginRequest.username,
     });
     if (!user) throw new HttpException('Username or password is wrong', 401);

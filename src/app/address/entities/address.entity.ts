@@ -21,7 +21,7 @@ export class Address {
   @Column({ name: 'province', type: 'varchar', length: 100, nullable: true })
   province: string;
 
-  @Column({ name: 'country', type: 'varchar', length: 10 })
+  @Column({ name: 'country', type: 'varchar', length: 100 })
   country: string;
 
   @Column({ name: 'postal_code', type: 'varchar', length: 10 })

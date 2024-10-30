@@ -6,7 +6,6 @@ import {
   Patch,
   Param,
   Delete,
-  Put,
   Query,
   ParseIntPipe,
 } from '@nestjs/common';
@@ -17,7 +16,6 @@ import { Auth } from 'src/common/auth.decorator';
 import { User } from '../user/entities/user.entity';
 import { WebResponse } from '../web-response';
 import { RemoveContactResponseDto } from './dto/remove-contact.dto';
-import { SearchContactRequestDto } from './dto/search-contact.dto';
 
 @Controller('/api/contacts')
 export class ContactController {
@@ -67,10 +65,9 @@ export class ContactController {
     @Auth() user: User,
     @Param('contactId') contactId: string,
   ): Promise<WebResponse<RemoveContactResponseDto>> {
-    const removeContact = await this.contactService.removeContact(
-      user,
-      contactId,
-    );
+    const removeContact: RemoveContactResponseDto =
+      await this.contactService.removeContact(user, contactId);
+
     return {
       data: removeContact,
     };

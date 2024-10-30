@@ -1,5 +1,5 @@
-export class CreateAddressRequestDto {
-  contactId: string;
+export class AddressResponseDto {
+  id: number;
   street?: string;
   city?: string;
   province?: string;

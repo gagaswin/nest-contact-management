@@ -100,7 +100,10 @@ Response Body:
 
 ```json
 {
-  "data": true
+  "data": {
+    "firstName": "name",
+    "isRemove": true
+  }
 }
 ```
 
@@ -150,7 +153,7 @@ Response Body:
   ],
   "paging": {
     "current_page": 1,
-    "total_page": 10,
+    "total_page": 1,
     "size": 10
   }
 }

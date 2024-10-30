@@ -15,7 +15,7 @@ Request Body:
   "street": "jalan contoh", // optional
   "city": "Atlantis", // optinal
   "province": "Prov", // optional
-  "postal_code": "123",
+  "postalCode": "123",
   "country": "Fire Nation"
 }
 ```
@@ -29,7 +29,7 @@ Response Body:
     "street": "jalan contoh", // optional
     "city": "Atlantis", // optinal
     "province": "Prov", // optional
-    "postal_code": "123",
+    "postalCode": "123",
     "country": "Fire Nation"
   }
 }
@@ -52,7 +52,7 @@ Response Body:
     "street": "jalan contoh", // optional
     "city": "Atlantis", // optinal
     "province": "Prov", // optional
-    "postal_code": "123",
+    "postalCode": "123",
     "country": "Fire Nation"
   }
 }
@@ -73,7 +73,7 @@ Request Body:
   "street": "jalan contoh", // optional
   "city": "Atlantis", // optinal
   "province": "Prov", // optional
-  "postal_code": "123",
+  "postalCode": "123",
   "country": "Fire Nation"
 }
 ```
@@ -87,7 +87,7 @@ Response Body:
     "street": "jalan contoh", // optional
     "city": "Atlantis", // optinal
     "province": "Prov", // optional
-    "postal_code": "123",
+    "postalCode": "123",
     "country": "Fire Nation"
   }
 }
@@ -127,7 +127,7 @@ Response Body:
       "street": "jalan contoh", // optional
       "city": "Atlantis", // optinal
       "province": "Prov", // optional
-      "postal_code": "123",
+      "postalCode": "123",
       "country": "Fire Nation"
     },
     {
@@ -135,7 +135,7 @@ Response Body:
       "street": "jalan contoh", // optional
       "city": "Atlantis", // optinal
       "province": "Prov", // optional
-      "postal_code": "123",
+      "postalCode": "123",
       "country": "Fire Nation"
     }
   ]
