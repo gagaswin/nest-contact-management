@@ -1,9 +1,15 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { ContactResponseDto, CreateContactRequestDto } from './dto/contact.dto';
+import { CreateContactRequestDto } from './dto/create-contact.dto';
+import { ContactResponseDto } from './dto/common-contact.dto';
 import { UpdateContactRequestDto } from './dto/update-contact.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Contact } from './entities/contact.entity';
-import { Repository, UpdateResult } from 'typeorm';
+import {
+  DeleteResult,
+  Repository,
+  SelectQueryBuilder,
+  UpdateResult,
+} from 'typeorm';
 import { ValidationService } from 'src/common/validation.service';
 import { ContactValidation } from './contact.validation';
 import { User } from '../user/entities/user.entity';
@@ -31,8 +37,8 @@ export class ContactService {
 
   async toCheckContactExist(user: User, contactId: string): Promise<Contact> {
     const contact: Contact = await this.contactRepository.findOneBy({
-      id: contactId,
       user: user,
+      id: contactId,
     });
 
     if (!contact) {
@@ -42,51 +48,49 @@ export class ContactService {
     return contact;
   }
 
-  async createContact(
+  async create(
     user: User,
-    createContactDto: CreateContactRequestDto,
+    createContactRequestDto: CreateContactRequestDto,
   ): Promise<ContactResponseDto> {
-    const createRequest: CreateContactRequestDto =
+    const validateCreateContactRequestDto: CreateContactRequestDto =
       this.validationService.validate(
         ContactValidation.CREATE,
-        createContactDto,
+        createContactRequestDto,
       );
 
-    const saveContact = await this.contactRepository.save({
-      ...createRequest,
+    const saveResult: Contact = await this.contactRepository.save({
+      ...validateCreateContactRequestDto,
       user: user,
     });
 
-    return this.toContactResponse(saveContact);
+    return this.toContactResponse(saveResult);
   }
 
-  async getContact(user: User, contactId: string): Promise<ContactResponseDto> {
-    const contact: Contact = await this.toCheckContactExist(user, contactId);
-    return this.toContactResponse(contact);
+  async get(user: User, contactId: string): Promise<ContactResponseDto> {
+    const getResult: Contact = await this.toCheckContactExist(user, contactId);
+
+    return this.toContactResponse(getResult);
   }
 
-  async updateContact(
+  async update(
     user: User,
     updateContactRequestDto: UpdateContactRequestDto,
   ): Promise<ContactResponseDto> {
-    const validateContact: UpdateContactRequestDto =
+    const { id, firstName, lastName, email, phone }: UpdateContactRequestDto =
       this.validationService.validate<UpdateContactRequestDto>(
         ContactValidation.UPDATE,
         updateContactRequestDto,
       );
 
-    let contact: Contact = await this.toCheckContactExist(
-      user,
-      validateContact.id,
-    );
+    let contact: Contact = await this.toCheckContactExist(user, id);
 
     const updateResult: UpdateResult = await this.contactRepository.update(
       { id: contact.id, user: user },
       {
-        firstName: validateContact.firstName,
-        lastName: validateContact.lastName,
-        email: validateContact.email,
-        phone: validateContact.phone,
+        firstName: firstName,
+        lastName: lastName,
+        email: email,
+        phone: phone,
       },
     );
 
@@ -97,45 +101,20 @@ export class ContactService {
       );
     }
 
-    contact = await this.toCheckContactExist(user, validateContact.id);
-
-    // // Update the contact entity with new values
-    // contact.firstName = validateContact.firstName;
-    // contact.lastName = validateContact.lastName;
-    // contact.email = validateContact.email;
-    // contact.phone = validateContact.phone;
-    // // Use save to update the contact
-    // contact = await this.contactRepository.save(contact);
-
-    // // coba pake queryBuilder // masih belum bisa
-    // await this.contactRepository
-    //   .createQueryBuilder()
-    //   .update(Contact)
-    //   .set({
-    //     firstName: validateContact.firstName,
-    //     lastName: validateContact.lastName,
-    //     email: validateContact.email,
-    //     phone: validateContact.phone,
-    //   })
-    //   .where('id = :id AND user = :user', { id: contact.id, user: user })
-    //   .returning(['first_name', 'last_name', 'email', 'phone'])
-    //   .execute();
+    contact = await this.toCheckContactExist(user, id);
 
     return this.toContactResponse(contact);
   }
 
-  async removeContact(
-    user: User,
-    id: string,
-  ): Promise<RemoveContactResponseDto> {
+  async remove(user: User, id: string): Promise<RemoveContactResponseDto> {
     const contact: Contact = await this.toCheckContactExist(user, id);
 
-    const removeContact = await this.contactRepository.delete({
+    const removeResult: DeleteResult = await this.contactRepository.delete({
       user: user,
       id: contact.id,
     });
 
-    if (removeContact.affected === 0) {
+    if (removeResult.affected === 0) {
       throw new HttpException(
         'Failed to delete contact',
         HttpStatus.INTERNAL_SERVER_ERROR,
@@ -148,17 +127,17 @@ export class ContactService {
     };
   }
 
-  async searchContact(
+  async search(
     user: User,
-    searchRequestDto: SearchContactRequestDto,
+    searchContactRequestDto: SearchContactRequestDto,
   ): Promise<WebResponse<ContactResponseDto[]>> {
     const { name, email, phone, page, size }: SearchContactRequestDto =
       this.validationService.validate<SearchContactRequestDto>(
         ContactValidation.SEARCH,
-        searchRequestDto,
+        searchContactRequestDto,
       );
 
-    const query = this.contactRepository
+    const selectQuery: SelectQueryBuilder<Contact> = this.contactRepository
       .createQueryBuilder('contacts')
       .select([
         'contacts.firstName',
@@ -171,27 +150,31 @@ export class ContactService {
       });
 
     if (name) {
-      query.andWhere(
+      selectQuery.andWhere(
         '(contacts.firstName ILIKE :name OR contacts.lastName ILIKE :name)',
         { name: `%${name}%` },
       );
     }
 
     if (email) {
-      query.andWhere('contacts.email ILIKE :email', { email: `%${email}%` });
+      selectQuery.andWhere('contacts.email ILIKE :email', {
+        email: `%${email}%`,
+      });
     }
 
     if (phone) {
-      query.andWhere('contacts.phone ILIKE :phone', { phone: `%${phone}%` });
+      selectQuery.andWhere('contacts.phone ILIKE :phone', {
+        phone: `%${phone}%`,
+      });
     }
 
-    const [contacts, totalContacts] = await query
+    const [contacts, totalContacts] = await selectQuery
       .skip((page - 1) * size)
       .take(size)
       .getManyAndCount();
 
-    console.info('Generated query sql: ', query.getSql());
-    console.info(contacts);
+    // console.info('Generated query sql: ', selectQuery.getSql());
+    // console.info(contacts);
 
     return {
       data: contacts.map((contact) => this.toContactResponse(contact)),

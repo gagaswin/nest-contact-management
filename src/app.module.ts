@@ -25,9 +25,9 @@ import { CommonModule } from './common/common.module';
         entities: [join(process.cwd(), 'dist/**/*.entity.js')],
         /* === do NOT use synchronize: true in real projects ===
         karena karena hal ini dapat secara otomatis mengubah skema database, 
-        yang bisa berisiko jika terjadi perubahan yang tidak terkontrol.
-        dropSchema untuk selalu menghapus shcema dan membuatnya lagi
-        ketika di re run*/
+        yang bisa berisiko jika terjadi perubahan yang tidak terkontrol.*/
+        /* === dropSchema untuk selalu menghapus shcema dan membuatnya lagi
+        ketika di re run === */
         // synchronize: true,
         // dropSchema: true,
       }),

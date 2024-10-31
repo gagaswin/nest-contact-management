@@ -10,7 +10,8 @@ import {
   ParseIntPipe,
 } from '@nestjs/common';
 import { ContactService } from './contact.service';
-import { ContactResponseDto, CreateContactRequestDto } from './dto/contact.dto';
+import { CreateContactRequestDto } from './dto/create-contact.dto';
+import { ContactResponseDto } from './dto/common-contact.dto';
 import { UpdateContactRequestDto } from './dto/update-contact.dto';
 import { Auth } from 'src/common/auth.decorator';
 import { User } from '../user/entities/user.entity';
@@ -24,14 +25,15 @@ export class ContactController {
   @Post()
   async createContact(
     @Auth() user: User,
-    @Body() createContactDto: CreateContactRequestDto,
+    @Body() createContactRequestDto: CreateContactRequestDto,
   ): Promise<WebResponse<ContactResponseDto>> {
-    const result = await this.contactService.createContact(
+    const saveResult: ContactResponseDto = await this.contactService.create(
       user,
-      createContactDto,
+      createContactRequestDto,
     );
+
     return {
-      data: result,
+      data: saveResult,
     };
   }
 
@@ -40,7 +42,11 @@ export class ContactController {
     @Auth() user: User,
     @Param('contactId') contactId: string,
   ): Promise<WebResponse<ContactResponseDto>> {
-    const contact = await this.contactService.getContact(user, contactId);
+    const contact: ContactResponseDto = await this.contactService.get(
+      user,
+      contactId,
+    );
+
     return {
       data: contact,
     };
@@ -53,10 +59,14 @@ export class ContactController {
     @Body() updateContactRequestDto: UpdateContactRequestDto,
   ): Promise<WebResponse<ContactResponseDto>> {
     updateContactRequestDto.id = contactId;
-    const resultUpdate: ContactResponseDto =
-      await this.contactService.updateContact(user, updateContactRequestDto);
+
+    const updateResult: ContactResponseDto = await this.contactService.update(
+      user,
+      updateContactRequestDto,
+    );
+
     return {
-      data: resultUpdate,
+      data: updateResult,
     };
   }
 
@@ -65,11 +75,11 @@ export class ContactController {
     @Auth() user: User,
     @Param('contactId') contactId: string,
   ): Promise<WebResponse<RemoveContactResponseDto>> {
-    const removeContact: RemoveContactResponseDto =
-      await this.contactService.removeContact(user, contactId);
+    const removeResult: RemoveContactResponseDto =
+      await this.contactService.remove(user, contactId);
 
     return {
-      data: removeContact,
+      data: removeResult,
     };
   }
 
@@ -82,13 +92,15 @@ export class ContactController {
     @Query('page', new ParseIntPipe({ optional: true })) page: number = 1,
     @Query('size', new ParseIntPipe({ optional: true })) size: number = 10,
   ): Promise<WebResponse<ContactResponseDto[]>> {
-    const contacts = this.contactService.searchContact(user, {
-      name,
-      email,
-      phone,
-      page,
-      size,
-    });
-    return contacts;
+    const searchResult: WebResponse<ContactResponseDto[]> =
+      await this.contactService.search(user, {
+        name,
+        email,
+        phone,
+        page,
+        size,
+      });
+
+    return searchResult;
   }
 }

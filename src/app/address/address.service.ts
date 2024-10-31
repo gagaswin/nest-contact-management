@@ -1,12 +1,12 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { CreateAddressRequestDto } from './dto/create-address.dto';
 import { UpdateAddressRequestDto } from './dto/update-address.dto';
-import { Repository } from 'typeorm';
+import { DeleteResult, Repository, UpdateResult } from 'typeorm';
 import { Address } from './entities/address.entity';
 import { AddressValidation } from './address.validation';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ValidationService } from 'src/common/validation.service';
-import { AddressResponseDto } from './dto/address.dto';
+import { AddressResponseDto } from './dto/common-address.dto';
 import { User } from '../user/entities/user.entity';
 import { ContactService } from '../contact/contact.service';
 import { GetAddressRequestDto } from './dto/get-address.dto';
@@ -25,7 +25,7 @@ export class AddressService {
     private readonly contactService: ContactService,
   ) {}
 
-  toAddressResponse(address: Address): AddressResponseDto {
+  private toAddressResponse(address: Address): AddressResponseDto {
     return {
       id: address.id,
       street: address.street,
@@ -52,11 +52,11 @@ export class AddressService {
     return address;
   }
 
-  async createAddress(
+  async create(
     user: User,
     createAddressRequestDto: CreateAddressRequestDto,
   ): Promise<AddressResponseDto> {
-    const validateCreateAddress: CreateAddressRequestDto =
+    const valiateCreateAddressRequestDto: CreateAddressRequestDto =
       this.validationService.validate<CreateAddressRequestDto>(
         AddressValidation.CREATE,
         createAddressRequestDto,
@@ -64,41 +64,38 @@ export class AddressService {
 
     const contact: Contact = await this.contactService.toCheckContactExist(
       user,
-      validateCreateAddress.contactId,
+      valiateCreateAddressRequestDto.contactId,
     );
 
-    const saveAddress = await this.addressRepository.save({
-      ...validateCreateAddress,
+    const saveResult: Address = await this.addressRepository.save({
+      ...valiateCreateAddressRequestDto,
       contact,
     });
 
-    return this.toAddressResponse(saveAddress);
+    return this.toAddressResponse(saveResult);
   }
 
-  async getAddress(
+  async get(
     user: User,
-    getAddressRequest: GetAddressRequestDto,
+    getAddressRequestDto: GetAddressRequestDto,
   ): Promise<AddressResponseDto> {
-    const validateGetAddressRequestDto: GetAddressRequestDto =
+    const { contactId, addressId }: GetAddressRequestDto =
       this.validationService.validate<GetAddressRequestDto>(
         AddressValidation.GET,
-        getAddressRequest,
+        getAddressRequestDto,
       );
 
     const contact: Contact = await this.contactService.toCheckContactExist(
       user,
-      validateGetAddressRequestDto.contactId,
+      contactId,
     );
 
-    const address: Address = await this.toCheckAddressExist(
-      contact,
-      validateGetAddressRequestDto.addressId,
-    );
+    const address: Address = await this.toCheckAddressExist(contact, addressId);
 
     return this.toAddressResponse(address);
   }
 
-  async updateAddress(
+  async update(
     user: User,
     updateAddressRequestDto: UpdateAddressRequestDto,
   ): Promise<AddressResponseDto> {
@@ -122,7 +119,7 @@ export class AddressService {
 
     let address: Address = await this.toCheckAddressExist(contact, id);
 
-    const updateAddress = await this.addressRepository.update(
+    const updateAddress: UpdateResult = await this.addressRepository.update(
       { id: address.id, contact: contact },
       { street, city, province, postalCode, country },
     );
@@ -139,7 +136,7 @@ export class AddressService {
     return this.toAddressResponse(address);
   }
 
-  async removeAddress(
+  async remove(
     user: User,
     removeAddressRequestDto: RemoveAddressRequestDto,
   ): Promise<RemoveAddressResponseDto> {
@@ -156,12 +153,12 @@ export class AddressService {
 
     const address: Address = await this.toCheckAddressExist(contact, addressId);
 
-    const removeAddress = await this.addressRepository.delete({
+    const removeResult: DeleteResult = await this.addressRepository.delete({
       contact: contact,
       id: address.id,
     });
 
-    if (removeAddress.affected === 0) {
+    if (removeResult.affected === 0) {
       throw new HttpException(
         'Failed to delete address',
         HttpStatus.INTERNAL_SERVER_ERROR,
@@ -174,19 +171,16 @@ export class AddressService {
     };
   }
 
-  async getListAddress(
-    user: User,
-    contactId: string,
-  ): Promise<AddressResponseDto[]> {
+  async getList(user: User, contactId: string): Promise<AddressResponseDto[]> {
     const contact: Contact = await this.contactService.toCheckContactExist(
       user,
       contactId,
     );
 
-    const listAddress: Address[] = await this.addressRepository.findBy({
+    const getListResult: Address[] = await this.addressRepository.findBy({
       contact: contact,
     });
 
-    return listAddress.map((address) => this.toAddressResponse(address));
+    return getListResult.map((address) => this.toAddressResponse(address));
   }
 }

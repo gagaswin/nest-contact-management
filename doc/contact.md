@@ -24,7 +24,7 @@ Response Body:
 ```json
 {
   "data": {
-    "id": 1,
+    "id": "uuid-sadsdf",
     "firsName": "Gagas",
     "lasName": "WIN",
     "email": "gagaswahyuin@gmail.com",
@@ -46,7 +46,7 @@ Response Body:
 ```json
 {
   "data": {
-    "id": 1,
+    "id": "uuid-sfasfd",
     "firstName": "Gagas",
     "lastName": "WIN",
     "email": "gagaswahyuin@gmail.com",
@@ -79,7 +79,7 @@ Response Body:
 ```json
 {
   "data": {
-    "id": 1,
+    "id": "uuid-sfasfd",
     "firstName": "Gagas",
     "lastName": "WIN",
     "email": "gagaswahyuin@gmail.com",
@@ -137,14 +137,14 @@ Response Body:
 {
   "data": [
     {
-      "id": 1,
+      "id": "uuid-sfasfd",
       "first_name": "Gagas",
       "last_name": "WIN",
       "email": "gagaswahyuin@gmail.com",
       "phone": "099999999999"
     },
     {
-      "id": 2,
+      "id": "uuid-sadsdf",
       "first_name": "Gagas",
       "last_name": "WIN",
       "email": "gagaswahyuin@gmail.com",
@@ -153,8 +153,8 @@ Response Body:
   ],
   "paging": {
     "current_page": 1,
-    "total_page": 1,
-    "size": 10
+    "size": 10,
+    "total_page": 1
   }
 }
 ```

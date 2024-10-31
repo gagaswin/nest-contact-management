@@ -18,11 +18,12 @@ import { UserResponseDto } from './dto/common-user.dto';
 @Injectable()
 export class UserService {
   constructor(
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
     private readonly validationService: ValidationService,
-    @InjectRepository(User) private readonly userRepository: Repository<User>,
   ) {}
 
-  async registerUser(
+  async register(
     registerUserRequestDto: RegisterUserRequestDto,
   ): Promise<UserResponseDto> {
     const { username, name, password }: RegisterUserRequestDto =
@@ -31,11 +32,11 @@ export class UserService {
         registerUserRequestDto,
       );
 
-    const userExist: boolean = await this.userRepository.existsBy({
+    const isUserExist: boolean = await this.userRepository.existsBy({
       username: username,
     });
 
-    if (userExist) {
+    if (isUserExist) {
       throw new HttpException('Username already exist', HttpStatus.BAD_REQUEST);
     }
 
@@ -47,20 +48,13 @@ export class UserService {
       name: name,
     });
 
-    const {
-      password: _,
-      contacts: __,
-      token: ___,
-      ...responseRegister
-    } = userRegister;
-
     return {
-      username: responseRegister.username,
-      name: responseRegister.name,
+      username: userRegister.username,
+      name: userRegister.name,
     };
   }
 
-  async loginUser(
+  async login(
     loginUserRequestDto: LoginUserRequestDto,
   ): Promise<UserResponseDto> {
     const { username, password }: LoginUserRequestDto =
@@ -95,10 +89,10 @@ export class UserService {
     const token: string = uuidv4();
 
     await this.userRepository
-      .createQueryBuilder('user')
+      .createQueryBuilder()
       .update(User)
       .set({ token })
-      .where('user.username = :username', { username: user.username })
+      .where('username = :username', { username: user.username })
       .execute();
 
     return {
@@ -108,14 +102,14 @@ export class UserService {
     };
   }
 
-  async getUser(user: User): Promise<UserResponseDto> {
+  async get(user: User): Promise<UserResponseDto> {
     return {
       username: user.name,
       name: user.name,
     };
   }
 
-  async updateUser(
+  async update(
     user: User,
     updateUserRequestDto: UpdateUserRequestDto,
   ): Promise<UpdateUserResponseDto> {
@@ -128,15 +122,15 @@ export class UserService {
     if (name) user.name = name;
     if (password) user.password = await bcrypt.hash(password, 10);
 
-    await this.userRepository.save(user);
+    const updateResult = await this.userRepository.save(user);
 
     return {
-      username: user.username,
-      name: user.name,
+      username: updateResult.username,
+      name: updateResult.name,
     };
   }
 
-  async logoutUser(user: User): Promise<LogoutUserResponseDto> {
+  async logout(user: User): Promise<LogoutUserResponseDto> {
     const logoutResult: UpdateResult = await this.userRepository.update(
       { username: user.username },
       {

@@ -21,7 +21,7 @@ export class UserController {
     @Body() registerUserDto: RegisterUserRequestDto,
   ): Promise<WebResponse<UserResponseDto>> {
     const registerResult: UserResponseDto =
-      await this.userService.registerUser(registerUserDto);
+      await this.userService.register(registerUserDto);
 
     return {
       data: registerResult,
@@ -33,7 +33,7 @@ export class UserController {
     @Body() loginUserRequestDto: LoginUserRequestDto,
   ): Promise<WebResponse<UserResponseDto>> {
     const loginResult: UserResponseDto =
-      await this.userService.loginUser(loginUserRequestDto);
+      await this.userService.login(loginUserRequestDto);
 
     return {
       data: loginResult,
@@ -42,7 +42,7 @@ export class UserController {
 
   @Get('/current')
   async getUser(@Auth() user: User): Promise<WebResponse<UserResponseDto>> {
-    const getResult: UserResponseDto = await this.userService.getUser(user);
+    const getResult: UserResponseDto = await this.userService.get(user);
 
     return {
       data: getResult,
@@ -54,8 +54,10 @@ export class UserController {
     @Auth() user: User,
     @Body() updateUserRequestDto: UpdateUserRequestDto,
   ): Promise<WebResponse<UpdateUserResponseDto>> {
-    const updateResult: UpdateUserResponseDto =
-      await this.userService.updateUser(user, updateUserRequestDto);
+    const updateResult: UpdateUserResponseDto = await this.userService.update(
+      user,
+      updateUserRequestDto,
+    );
 
     return {
       data: updateResult,
@@ -67,7 +69,7 @@ export class UserController {
     @Auth() user: User,
   ): Promise<WebResponse<LogoutUserResponseDto>> {
     const logoutResult: LogoutUserResponseDto =
-      await this.userService.logoutUser(user);
+      await this.userService.logout(user);
 
     return {
       data: logoutResult,
