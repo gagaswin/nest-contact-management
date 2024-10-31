@@ -1,22 +1,16 @@
 import { Controller, Get, Post, Body, Patch, Delete } from '@nestjs/common';
 import { UserService } from './user.service';
-import {
-  RegisterUserRequestDto,
-  RegisterUserResponseDto,
-} from './dto/register-user.dto';
+import { RegisterUserRequestDto } from './dto/register-user.dto';
 import {
   UpdateUserRequestDto,
   UpdateUserResponseDto,
 } from './dto/update-user.dto';
 import { WebResponse } from '../web-response';
-import {
-  LoginUserRequestDto,
-  LoginUserResponseDto,
-} from './dto/login-user.dto';
+import { LoginUserRequestDto } from './dto/login-user.dto';
 import { Auth } from 'src/common/auth.decorator';
 import { User } from './entities/user.entity';
-import { GetUserResponseDto } from './dto/get-user.dto';
 import { LogoutUserResponseDto } from './dto/logout-user';
+import { UserResponseDto } from './dto/common-user.dto';
 
 @Controller('/api/users')
 export class UserController {
@@ -25,28 +19,33 @@ export class UserController {
   @Post()
   async registerUser(
     @Body() registerUserDto: RegisterUserRequestDto,
-  ): Promise<WebResponse<RegisterUserResponseDto>> {
-    const result = await this.userService.register(registerUserDto);
+  ): Promise<WebResponse<UserResponseDto>> {
+    const registerResult: UserResponseDto =
+      await this.userService.registerUser(registerUserDto);
+
     return {
-      data: result,
+      data: registerResult,
     };
   }
 
   @Post('/login')
   async loginUser(
     @Body() loginUserRequestDto: LoginUserRequestDto,
-  ): Promise<WebResponse<LoginUserResponseDto>> {
-    const result = await this.userService.login(loginUserRequestDto);
+  ): Promise<WebResponse<UserResponseDto>> {
+    const loginResult: UserResponseDto =
+      await this.userService.loginUser(loginUserRequestDto);
+
     return {
-      data: result,
+      data: loginResult,
     };
   }
 
   @Get('/current')
-  async getUser(@Auth() user: User): Promise<WebResponse<GetUserResponseDto>> {
-    const result = await this.userService.getUser(user);
+  async getUser(@Auth() user: User): Promise<WebResponse<UserResponseDto>> {
+    const getResult: UserResponseDto = await this.userService.getUser(user);
+
     return {
-      data: result,
+      data: getResult,
     };
   }
 
@@ -55,12 +54,11 @@ export class UserController {
     @Auth() user: User,
     @Body() updateUserRequestDto: UpdateUserRequestDto,
   ): Promise<WebResponse<UpdateUserResponseDto>> {
-    const result = await this.userService.updateUser(
-      user,
-      updateUserRequestDto,
-    );
+    const updateResult: UpdateUserResponseDto =
+      await this.userService.updateUser(user, updateUserRequestDto);
+
     return {
-      data: result,
+      data: updateResult,
     };
   }
 
@@ -68,9 +66,11 @@ export class UserController {
   async logoutUser(
     @Auth() user: User,
   ): Promise<WebResponse<LogoutUserResponseDto>> {
-    const result = await this.userService.logoutUser(user);
+    const logoutResult: LogoutUserResponseDto =
+      await this.userService.logoutUser(user);
+
     return {
-      data: result,
+      data: logoutResult,
     };
   }
 }

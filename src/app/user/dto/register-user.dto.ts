@@ -3,9 +3,3 @@ export class RegisterUserRequestDto {
   password: string;
   name: string;
 }
-
-export class RegisterUserResponseDto {
-  username: string;
-  name: string;
-  token?: string;
-}

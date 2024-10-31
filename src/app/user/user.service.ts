@@ -1,25 +1,19 @@
-import { HttpException, Injectable } from '@nestjs/common';
-import {
-  RegisterUserRequestDto,
-  RegisterUserResponseDto,
-} from './dto/register-user.dto';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { RegisterUserRequestDto } from './dto/register-user.dto';
 import {
   UpdateUserRequestDto,
   UpdateUserResponseDto,
 } from './dto/update-user.dto';
 import { ValidationService } from 'src/common/validation.service';
-import { Repository } from 'typeorm';
+import { Repository, UpdateResult } from 'typeorm';
 import { User } from './entities/user.entity';
 import { UserValidation } from './user.validation';
 import * as bcrypt from 'bcrypt';
 import { InjectRepository } from '@nestjs/typeorm';
-import {
-  LoginUserRequestDto,
-  LoginUserResponseDto,
-} from './dto/login-user.dto';
+import { LoginUserRequestDto } from './dto/login-user.dto';
 import { v4 as uuidv4 } from 'uuid';
-import { GetUserResponseDto } from './dto/get-user.dto';
 import { LogoutUserResponseDto } from './dto/logout-user';
+import { UserResponseDto } from './dto/common-user.dto';
 
 @Injectable()
 export class UserService {
@@ -28,66 +22,83 @@ export class UserService {
     @InjectRepository(User) private readonly userRepository: Repository<User>,
   ) {}
 
-  async register(
-    registerUserDto: RegisterUserRequestDto,
-  ): Promise<RegisterUserResponseDto> {
-    const registerRequest: RegisterUserRequestDto =
+  async registerUser(
+    registerUserRequestDto: RegisterUserRequestDto,
+  ): Promise<UserResponseDto> {
+    const { username, name, password }: RegisterUserRequestDto =
       this.validationService.validate<RegisterUserRequestDto>(
         UserValidation.REGISTER,
-        registerUserDto,
+        registerUserRequestDto,
       );
 
-    const userExist = await this.userRepository.exists({
-      where: {
-        username: registerRequest.username,
-      },
+    const userExist: boolean = await this.userRepository.existsBy({
+      username: username,
     });
 
-    if (userExist) throw new HttpException('Username already exist', 400);
+    if (userExist) {
+      throw new HttpException('Username already exist', HttpStatus.BAD_REQUEST);
+    }
 
-    registerRequest.password = await bcrypt.hash(registerRequest.password, 10);
+    const hashedPassword: string = await bcrypt.hash(password, 10);
 
-    const { username, password, name } = registerRequest;
-    const userRegister = await this.userRepository.save({
+    const userRegister: User = await this.userRepository.save({
       username: username,
-      password: password,
+      password: hashedPassword,
       name: name,
     });
-    // const { password: _, ...userWithoutPassword } = user;
+
+    const {
+      password: _,
+      contacts: __,
+      token: ___,
+      ...responseRegister
+    } = userRegister;
+
     return {
-      username: userRegister.username,
-      name: userRegister.name,
+      username: responseRegister.username,
+      name: responseRegister.name,
     };
   }
 
-  async login(
+  async loginUser(
     loginUserRequestDto: LoginUserRequestDto,
-  ): Promise<LoginUserResponseDto> {
-    const loginRequest: LoginUserRequestDto =
+  ): Promise<UserResponseDto> {
+    const { username, password }: LoginUserRequestDto =
       this.validationService.validate<LoginUserRequestDto>(
         UserValidation.LOGIN,
         loginUserRequestDto,
       );
 
     const user: User = await this.userRepository.findOneBy({
-      username: loginRequest.username,
+      username: username,
     });
-    if (!user) throw new HttpException('Username or password is wrong', 401);
 
-    const isPasswordValid = await bcrypt.compare(
-      loginRequest.password,
+    if (!user) {
+      throw new HttpException(
+        'Username or password is wrong',
+        HttpStatus.UNAUTHORIZED,
+      );
+    }
+
+    const isPasswordValid: boolean = await bcrypt.compare(
+      password,
       user.password,
     );
-    if (!isPasswordValid)
-      throw new HttpException('Username or password is wrong', 401);
+
+    if (!isPasswordValid) {
+      throw new HttpException(
+        'Username or password is wrong',
+        HttpStatus.UNAUTHORIZED,
+      );
+    }
 
     const token: string = uuidv4();
 
     await this.userRepository
-      .createQueryBuilder()
+      .createQueryBuilder('user')
       .update(User)
       .set({ token })
-      .where('username = :username', { username: user.username })
+      .where('user.username = :username', { username: user.username })
       .execute();
 
     return {
@@ -97,7 +108,7 @@ export class UserService {
     };
   }
 
-  async getUser(user: User): Promise<GetUserResponseDto> {
+  async getUser(user: User): Promise<UserResponseDto> {
     return {
       username: user.name,
       name: user.name,
@@ -108,14 +119,14 @@ export class UserService {
     user: User,
     updateUserRequestDto: UpdateUserRequestDto,
   ): Promise<UpdateUserResponseDto> {
-    const updateUser: UpdateUserRequestDto = this.validationService.validate(
-      UserValidation.UPDATE,
-      updateUserRequestDto,
-    );
+    const { name, password }: UpdateUserRequestDto =
+      this.validationService.validate<UpdateUserRequestDto>(
+        UserValidation.UPDATE,
+        updateUserRequestDto,
+      );
 
-    if (updateUser.name) user.name = updateUser.name;
-    if (updateUser.password)
-      user.password = await bcrypt.hash(updateUser.password, 10);
+    if (name) user.name = name;
+    if (password) user.password = await bcrypt.hash(password, 10);
 
     await this.userRepository.save(user);
 
@@ -126,18 +137,23 @@ export class UserService {
   }
 
   async logoutUser(user: User): Promise<LogoutUserResponseDto> {
-    const result = await this.userRepository.update(user.username, {
-      token: null,
-    });
+    const logoutResult: UpdateResult = await this.userRepository.update(
+      { username: user.username },
+      {
+        token: null,
+      },
+    );
 
-    let isLogout: boolean = false;
-    if (result.affected && result.affected > 0) {
-      isLogout = true;
+    if (logoutResult.affected === 0) {
+      throw new HttpException(
+        'Logout failed',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
 
     return {
       username: user.username,
-      isLogout: isLogout,
+      isLogout: true,
     };
   }
 }

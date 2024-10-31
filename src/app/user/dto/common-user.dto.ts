@@ -1,4 +1,4 @@
-export class GetUserResponseDto {
+export class UserResponseDto {
   username: string;
   name: string;
   token?: string;
