@@ -1,9 +1,18 @@
 import { Contact } from 'src/app/contact/entities/contact.entity';
-import { Column, Entity, OneToMany, PrimaryColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  OneToMany,
+  PrimaryColumn,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 
 @Entity({ name: 'user' })
 export class User {
-  @PrimaryColumn({ name: 'username', type: 'varchar', length: 100 })
+  @PrimaryGeneratedColumn('uuid', { name: 'id' })
+  id: string;
+
+  @Column({ name: 'username', unique: true, type: 'varchar', length: 100 })
   username: string;
 
   @Column({ name: 'password', type: 'varchar', length: 100 })
@@ -15,6 +24,6 @@ export class User {
   @Column({ name: 'token', type: 'varchar', nullable: true })
   token: string;
 
-  @OneToMany(() => Contact, (contact) => contact.user)
+  @OneToMany(() => Contact, (contact: Contact) => contact.user)
   contacts: Contact[];
 }

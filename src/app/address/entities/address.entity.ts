@@ -9,7 +9,7 @@ import {
 
 @Entity({ name: 'address' })
 export class Address {
-  @PrimaryGeneratedColumn('increment')
+  @PrimaryGeneratedColumn('increment', { name: 'id' })
   id: number;
 
   @Column({ name: 'street', type: 'varchar', length: 255, nullable: true })
@@ -27,7 +27,9 @@ export class Address {
   @Column({ name: 'postal_code', type: 'varchar', length: 10 })
   postalCode: string;
 
-  @ManyToOne(() => Contact, (contact) => contact.id, { nullable: false })
+  @ManyToOne(() => Contact, (contact: Contact) => contact.id, {
+    nullable: false,
+  })
   @JoinColumn({ name: 'contact_id' })
   contact: Contact;
 }

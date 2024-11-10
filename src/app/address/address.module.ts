@@ -6,10 +6,11 @@ import { User } from '../user/entities/user.entity';
 import { Contact } from '../contact/entities/contact.entity';
 import { Address } from './entities/address.entity';
 import { ContactModule } from '../contact/contact.module';
+import { UserService } from '../user/user.service';
 
 @Module({
   imports: [TypeOrmModule.forFeature([User, Contact, Address]), ContactModule],
   controllers: [AddressController],
-  providers: [AddressService],
+  providers: [AddressService, UserService],
 })
 export class AddressModule {}

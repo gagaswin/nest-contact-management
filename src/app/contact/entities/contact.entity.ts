@@ -26,10 +26,10 @@ export class Contact {
   @Column({ name: 'phone', type: 'varchar', length: 20, nullable: true })
   phone: string;
 
-  @ManyToOne(() => User, (user) => user.contacts, { nullable: false })
-  @JoinColumn({ name: 'username' })
+  @ManyToOne(() => User, (user: User) => user.contacts, { nullable: false })
+  @JoinColumn({ name: 'user_id' })
   user: User;
 
-  @OneToMany(() => Address, (address) => address.contact)
+  @OneToMany(() => Address, (address: Address) => address.contact)
   address: Address[];
 }

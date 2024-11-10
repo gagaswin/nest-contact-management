@@ -8,10 +8,13 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { join } from 'path';
 import { AddressModule } from './app/address/address.module';
 import { CommonModule } from './common/common.module';
+import { AuthModule } from './app/auth/auth.module';
+import { JwtGuard } from './app/auth/guards/jwt.guard';
+import { APP_GUARD } from '@nestjs/core';
 
 @Module({
   imports: [
-    ConfigModule.forRoot(),
+    ConfigModule.forRoot({ isGlobal: true }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -28,16 +31,23 @@ import { CommonModule } from './common/common.module';
         yang bisa berisiko jika terjadi perubahan yang tidak terkontrol.*/
         /* === dropSchema untuk selalu menghapus shcema dan membuatnya lagi
         ketika di re run === */
-        // synchronize: true,
-        // dropSchema: true,
+        synchronize: true,
+        dropSchema: true,
       }),
     }),
     UserModule,
     ContactModule,
     AddressModule,
     CommonModule,
+    AuthModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: APP_GUARD,
+      useClass: JwtGuard,
+    },
+  ],
 })
 export class AppModule {}

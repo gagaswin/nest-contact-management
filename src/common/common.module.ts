@@ -11,7 +11,6 @@ import * as winston from 'winston';
 import { ValidationService } from './validation.service';
 import { APP_FILTER } from '@nestjs/core';
 import { ErrorFilter } from './error.filter';
-import { AuthMiddleware } from './auth.middleware';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from 'src/app/user/entities/user.entity';
 
@@ -33,11 +32,4 @@ import { User } from 'src/app/user/entities/user.entity';
   ],
   exports: [ValidationService],
 })
-export class CommonModule implements NestModule {
-  configure(consumer: MiddlewareConsumer) {
-    consumer.apply(AuthMiddleware).forRoutes({
-      path: '/api/*',
-      method: RequestMethod.ALL,
-    });
-  }
-}
+export class CommonModule {}

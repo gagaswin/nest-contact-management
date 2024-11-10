@@ -16,6 +16,7 @@ import { User } from '../user/entities/user.entity';
 import { RemoveContactResponseDto } from './dto/remove-contact.dto';
 import { SearchContactRequestDto } from './dto/search-contact.dto';
 import { WebResponse } from '../web-response';
+import { UserService } from '../user/user.service';
 
 @Injectable()
 export class ContactService {
@@ -23,8 +24,10 @@ export class ContactService {
     @InjectRepository(Contact)
     private readonly contactRepository: Repository<Contact>,
     private readonly validationService: ValidationService,
+    private readonly userService: UserService,
   ) {}
 
+  // common \\
   private toContactResponse(contact: Contact): ContactResponseDto {
     return {
       id: contact.id,
@@ -48,8 +51,9 @@ export class ContactService {
     return contact;
   }
 
+  // service \\
   async create(
-    user: User,
+    userId: string,
     createContactRequestDto: CreateContactRequestDto,
   ): Promise<ContactResponseDto> {
     const validateCreateContactRequestDto: CreateContactRequestDto =
@@ -57,6 +61,8 @@ export class ContactService {
         ContactValidation.CREATE,
         createContactRequestDto,
       );
+
+    const user: User = await this.userService.findOneUserById(userId);
 
     const saveResult: Contact = await this.contactRepository.save({
       ...validateCreateContactRequestDto,
@@ -66,14 +72,16 @@ export class ContactService {
     return this.toContactResponse(saveResult);
   }
 
-  async get(user: User, contactId: string): Promise<ContactResponseDto> {
+  async get(userId: string, contactId: string): Promise<ContactResponseDto> {
+    const user: User = await this.userService.findOneUserById(userId);
+
     const getResult: Contact = await this.toCheckContactExist(user, contactId);
 
     return this.toContactResponse(getResult);
   }
 
   async update(
-    user: User,
+    userId: string,
     updateContactRequestDto: UpdateContactRequestDto,
   ): Promise<ContactResponseDto> {
     const { id, firstName, lastName, email, phone }: UpdateContactRequestDto =
@@ -81,6 +89,8 @@ export class ContactService {
         ContactValidation.UPDATE,
         updateContactRequestDto,
       );
+
+    const user: User = await this.userService.findOneUserById(userId);
 
     let contact: Contact = await this.toCheckContactExist(user, id);
 
@@ -106,7 +116,9 @@ export class ContactService {
     return this.toContactResponse(contact);
   }
 
-  async remove(user: User, id: string): Promise<RemoveContactResponseDto> {
+  async remove(userId: string, id: string): Promise<RemoveContactResponseDto> {
+    const user: User = await this.userService.findOneUserById(userId);
+
     const contact: Contact = await this.toCheckContactExist(user, id);
 
     const removeResult: DeleteResult = await this.contactRepository.delete({
@@ -128,7 +140,7 @@ export class ContactService {
   }
 
   async search(
-    user: User,
+    userId: string,
     searchContactRequestDto: SearchContactRequestDto,
   ): Promise<WebResponse<ContactResponseDto[]>> {
     const { name, email, phone, page, size }: SearchContactRequestDto =
@@ -136,6 +148,8 @@ export class ContactService {
         ContactValidation.SEARCH,
         searchContactRequestDto,
       );
+
+    const user: User = await this.userService.findOneUserById(userId);
 
     const selectQuery: SelectQueryBuilder<Contact> = this.contactRepository
       .createQueryBuilder('contacts')
@@ -145,8 +159,8 @@ export class ContactService {
         'contacts.email',
         'contacts.phone',
       ])
-      .where('contacts.username = :username', {
-        username: user.username,
+      .where('contacts.user_id = :id', {
+        id: user.id,
       });
 
     if (name) {
@@ -173,8 +187,8 @@ export class ContactService {
       .take(size)
       .getManyAndCount();
 
-    // console.info('Generated query sql: ', selectQuery.getSql());
-    // console.info(contacts);
+    console.info('Generated query sql: ', selectQuery.getSql());
+    console.info(contacts);
 
     return {
       data: contacts.map((contact) => this.toContactResponse(contact)),

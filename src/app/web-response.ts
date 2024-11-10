@@ -1,5 +1,6 @@
 export class WebResponse<T> {
   data?: T;
+  accessToken?: string;
   errors?: string;
   paging?: Paging;
 }

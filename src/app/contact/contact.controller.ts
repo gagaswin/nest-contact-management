@@ -13,10 +13,10 @@ import { ContactService } from './contact.service';
 import { CreateContactRequestDto } from './dto/create-contact.dto';
 import { ContactResponseDto } from './dto/common-contact.dto';
 import { UpdateContactRequestDto } from './dto/update-contact.dto';
-import { Auth } from 'src/common/auth.decorator';
-import { User } from '../user/entities/user.entity';
 import { WebResponse } from '../web-response';
 import { RemoveContactResponseDto } from './dto/remove-contact.dto';
+import { UserAuth } from '../auth/decorator/user-auth.decorator';
+import IJwtPayload from 'src/utils/IJwtPayload.interface';
 
 @Controller('/api/contacts')
 export class ContactController {
@@ -24,11 +24,11 @@ export class ContactController {
 
   @Post()
   async createContact(
-    @Auth() user: User,
+    @UserAuth() user: IJwtPayload,
     @Body() createContactRequestDto: CreateContactRequestDto,
   ): Promise<WebResponse<ContactResponseDto>> {
     const saveResult: ContactResponseDto = await this.contactService.create(
-      user,
+      user.userId,
       createContactRequestDto,
     );
 
@@ -39,11 +39,11 @@ export class ContactController {
 
   @Get('/:contactId')
   async getContact(
-    @Auth() user: User,
+    @UserAuth() user: IJwtPayload,
     @Param('contactId') contactId: string,
   ): Promise<WebResponse<ContactResponseDto>> {
     const contact: ContactResponseDto = await this.contactService.get(
-      user,
+      user.userId,
       contactId,
     );
 
@@ -54,14 +54,14 @@ export class ContactController {
 
   @Patch('/:contactId')
   async updateContact(
-    @Auth() user: User,
+    @UserAuth() user: IJwtPayload,
     @Param('contactId') contactId: string,
     @Body() updateContactRequestDto: UpdateContactRequestDto,
   ): Promise<WebResponse<ContactResponseDto>> {
     updateContactRequestDto.id = contactId;
 
     const updateResult: ContactResponseDto = await this.contactService.update(
-      user,
+      user.userId,
       updateContactRequestDto,
     );
 
@@ -72,11 +72,11 @@ export class ContactController {
 
   @Delete('/:contactId')
   async removeContact(
-    @Auth() user: User,
+    @UserAuth() user: IJwtPayload,
     @Param('contactId') contactId: string,
   ): Promise<WebResponse<RemoveContactResponseDto>> {
     const removeResult: RemoveContactResponseDto =
-      await this.contactService.remove(user, contactId);
+      await this.contactService.remove(user.userId, contactId);
 
     return {
       data: removeResult,
@@ -85,7 +85,7 @@ export class ContactController {
 
   @Get()
   async searchContacts(
-    @Auth() user: User,
+    @UserAuth() user: IJwtPayload,
     @Query('name') name?: string,
     @Query('email') email?: string,
     @Query('phone') phone?: string,
@@ -93,7 +93,7 @@ export class ContactController {
     @Query('size', new ParseIntPipe({ optional: true })) size: number = 10,
   ): Promise<WebResponse<ContactResponseDto[]>> {
     const searchResult: WebResponse<ContactResponseDto[]> =
-      await this.contactService.search(user, {
+      await this.contactService.search(user.userId, {
         name,
         email,
         phone,

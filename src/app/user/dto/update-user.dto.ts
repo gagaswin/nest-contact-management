@@ -1,5 +1,5 @@
 import { PartialType } from '@nestjs/mapped-types';
-import { RegisterUserRequestDto } from './register-user.dto';
+import { RegisterUserRequestDto } from '../../auth/dto/register-user.dto';
 
 export class UpdateUserRequestDto extends PartialType(RegisterUserRequestDto) {
   name?: string;

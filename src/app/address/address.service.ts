@@ -15,6 +15,7 @@ import {
   RemoveAddressRequestDto,
   RemoveAddressResponseDto,
 } from './dto/remove-address.dto';
+import { UserService } from '../user/user.service';
 
 @Injectable()
 export class AddressService {
@@ -23,8 +24,10 @@ export class AddressService {
     private readonly addressRepository: Repository<Address>,
     private readonly validationService: ValidationService,
     private readonly contactService: ContactService,
+    private readonly userService: UserService,
   ) {}
 
+  // common \\
   private toAddressResponse(address: Address): AddressResponseDto {
     return {
       id: address.id,
@@ -52,8 +55,9 @@ export class AddressService {
     return address;
   }
 
+  // service \\
   async create(
-    user: User,
+    userId: string,
     createAddressRequestDto: CreateAddressRequestDto,
   ): Promise<AddressResponseDto> {
     const valiateCreateAddressRequestDto: CreateAddressRequestDto =
@@ -61,6 +65,8 @@ export class AddressService {
         AddressValidation.CREATE,
         createAddressRequestDto,
       );
+
+    const user: User = await this.userService.findOneUserById(userId);
 
     const contact: Contact = await this.contactService.toCheckContactExist(
       user,
@@ -76,7 +82,7 @@ export class AddressService {
   }
 
   async get(
-    user: User,
+    userId: string,
     getAddressRequestDto: GetAddressRequestDto,
   ): Promise<AddressResponseDto> {
     const { contactId, addressId }: GetAddressRequestDto =
@@ -84,6 +90,8 @@ export class AddressService {
         AddressValidation.GET,
         getAddressRequestDto,
       );
+
+    const user: User = await this.userService.findOneUserById(userId);
 
     const contact: Contact = await this.contactService.toCheckContactExist(
       user,
@@ -96,7 +104,7 @@ export class AddressService {
   }
 
   async update(
-    user: User,
+    userId: string,
     updateAddressRequestDto: UpdateAddressRequestDto,
   ): Promise<AddressResponseDto> {
     const {
@@ -111,6 +119,8 @@ export class AddressService {
       AddressValidation.UPDATE,
       updateAddressRequestDto,
     );
+
+    const user: User = await this.userService.findOneUserById(userId);
 
     const contact: Contact = await this.contactService.toCheckContactExist(
       user,
@@ -137,7 +147,7 @@ export class AddressService {
   }
 
   async remove(
-    user: User,
+    userId: string,
     removeAddressRequestDto: RemoveAddressRequestDto,
   ): Promise<RemoveAddressResponseDto> {
     const { contactId, addressId }: RemoveAddressRequestDto =
@@ -145,6 +155,8 @@ export class AddressService {
         AddressValidation.REMOVE,
         removeAddressRequestDto,
       );
+
+    const user: User = await this.userService.findOneUserById(userId);
 
     const contact: Contact = await this.contactService.toCheckContactExist(
       user,
@@ -171,7 +183,12 @@ export class AddressService {
     };
   }
 
-  async getList(user: User, contactId: string): Promise<AddressResponseDto[]> {
+  async getList(
+    userId: string,
+    contactId: string,
+  ): Promise<AddressResponseDto[]> {
+    const user: User = await this.userService.findOneUserById(userId);
+
     const contact: Contact = await this.contactService.toCheckContactExist(
       user,
       contactId,

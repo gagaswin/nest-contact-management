@@ -11,8 +11,6 @@ import {
 import { AddressService } from './address.service';
 import { CreateAddressRequestDto } from './dto/create-address.dto';
 import { UpdateAddressRequestDto } from './dto/update-address.dto';
-import { Auth } from 'src/common/auth.decorator';
-import { User } from '../user/entities/user.entity';
 import { WebResponse } from '../web-response';
 import { AddressResponseDto } from './dto/common-address.dto';
 import { GetAddressRequestDto } from './dto/get-address.dto';
@@ -20,6 +18,8 @@ import {
   RemoveAddressRequestDto,
   RemoveAddressResponseDto,
 } from './dto/remove-address.dto';
+import { UserAuth } from '../auth/decorator/user-auth.decorator';
+import IJwtPayload from 'src/utils/IJwtPayload.interface';
 
 @Controller('/api/contacts/:contactId/addresses')
 export class AddressController {
@@ -27,14 +27,14 @@ export class AddressController {
 
   @Post()
   async createAddress(
-    @Auth() user: User,
+    @UserAuth() user: IJwtPayload,
     @Param('contactId') contactId: string,
     @Body() createAddressRequestDto: CreateAddressRequestDto,
   ): Promise<WebResponse<AddressResponseDto>> {
     createAddressRequestDto.contactId = contactId;
 
     const createResult: AddressResponseDto = await this.addressService.create(
-      user,
+      user.userId,
       createAddressRequestDto,
     );
 
@@ -45,14 +45,14 @@ export class AddressController {
 
   @Get('/:addressId')
   async getAddress(
-    @Auth() user: User,
+    @UserAuth() user: IJwtPayload,
     @Param('contactId') contactId: string,
     @Param('addressId', ParseIntPipe) addressId: number,
   ): Promise<WebResponse<AddressResponseDto>> {
     const getAddressRequestDto: GetAddressRequestDto = { contactId, addressId };
 
     const getResult: AddressResponseDto = await this.addressService.get(
-      user,
+      user.userId,
       getAddressRequestDto,
     );
 
@@ -63,7 +63,7 @@ export class AddressController {
 
   @Patch('/:addressId')
   async updateAddress(
-    @Auth() user: User,
+    @UserAuth() user: IJwtPayload,
     @Param('contactId') contactId: string,
     @Param('addressId', ParseIntPipe) addressId: number,
     @Body() updateAddressRequestDto: UpdateAddressRequestDto,
@@ -72,7 +72,7 @@ export class AddressController {
     updateAddressRequestDto.id = addressId;
 
     const updateResult: AddressResponseDto = await this.addressService.update(
-      user,
+      user.userId,
       updateAddressRequestDto,
     );
 
@@ -83,7 +83,7 @@ export class AddressController {
 
   @Delete('/:addressId')
   async removeAddress(
-    @Auth() user: User,
+    @UserAuth() user: IJwtPayload,
     @Param('contactId') contactId: string,
     @Param('addressId', ParseIntPipe) addressId: number,
   ): Promise<WebResponse<RemoveAddressResponseDto>> {
@@ -93,7 +93,7 @@ export class AddressController {
     };
 
     const removeResult: RemoveAddressResponseDto =
-      await this.addressService.remove(user, removeAddressRequestDto);
+      await this.addressService.remove(user.userId, removeAddressRequestDto);
 
     return {
       data: removeResult,
@@ -102,11 +102,11 @@ export class AddressController {
 
   @Get()
   async getListAddress(
-    @Auth() user: User,
+    @UserAuth() user: IJwtPayload,
     @Param('contactId') contactId: string,
   ): Promise<WebResponse<AddressResponseDto[]>> {
     const getListResult: AddressResponseDto[] =
-      await this.addressService.getList(user, contactId);
+      await this.addressService.getList(user.userId, contactId);
 
     return {
       data: getListResult,
