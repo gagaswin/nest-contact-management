@@ -110,6 +110,7 @@ Request Body:
 
 ```json
 {
+  "username": "gagaswins", // optional
   "password": "rahasia123", // optional
   "name": "Gagas WIN" // optional
 }
@@ -120,8 +121,9 @@ Response Body (Success):
 ```json
 {
   "data": {
-    "username": "gagaswin",
-    "name": "Gagas WIN"
+    "username": "gagaswins",
+    "name": "Gagas WIN",
+    "password": "Password successfully updated!"
   }
 }
 ```

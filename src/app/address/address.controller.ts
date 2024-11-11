@@ -19,7 +19,7 @@ import {
   RemoveAddressResponseDto,
 } from './dto/remove-address.dto';
 import { UserAuth } from '../auth/decorator/user-auth.decorator';
-import IJwtPayload from 'src/utils/IJwtPayload.interface';
+import IJwtPayload from 'src/utils/types/IJwtPayload.interface';
 
 @Controller('/api/contacts/:contactId/addresses')
 export class AddressController {

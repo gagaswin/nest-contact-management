@@ -16,7 +16,7 @@ import { UpdateContactRequestDto } from './dto/update-contact.dto';
 import { WebResponse } from '../web-response';
 import { RemoveContactResponseDto } from './dto/remove-contact.dto';
 import { UserAuth } from '../auth/decorator/user-auth.decorator';
-import IJwtPayload from 'src/utils/IJwtPayload.interface';
+import IJwtPayload from 'src/utils/types/IJwtPayload.interface';
 
 @Controller('/api/contacts')
 export class ContactController {

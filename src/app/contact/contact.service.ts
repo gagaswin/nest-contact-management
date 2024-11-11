@@ -94,14 +94,16 @@ export class ContactService {
 
     let contact: Contact = await this.toCheckContactExist(user, id);
 
+    const updateContactData: Partial<Contact> = {
+      firstName,
+      lastName,
+      email,
+      phone,
+    };
+
     const updateResult: UpdateResult = await this.contactRepository.update(
       { id: contact.id, user: user },
-      {
-        firstName: firstName,
-        lastName: lastName,
-        email: email,
-        phone: phone,
-      },
+      updateContactData,
     );
 
     if (updateResult.affected === 0) {

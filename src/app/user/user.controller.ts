@@ -7,7 +7,7 @@ import {
 import { WebResponse } from '../web-response';
 import { UserResponseDto } from './dto/common-user.dto';
 import { UserAuth } from '../auth/decorator/user-auth.decorator';
-import IJwtPayload from 'src/utils/IJwtPayload.interface';
+import IJwtPayload from 'src/utils/types/IJwtPayload.interface';
 
 @Controller('/api/users')
 export class UserController {

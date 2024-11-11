@@ -1,16 +1,21 @@
-import { Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { RegisterUserRequestDto } from '../auth/dto/register-user.dto';
 import {
   UpdateUserRequestDto,
   UpdateUserResponseDto,
 } from './dto/update-user.dto';
 import { ValidationService } from 'src/common/validation.service';
-import { Repository } from 'typeorm';
+import { Repository, UpdateResult } from 'typeorm';
 import { User } from './entities/user.entity';
 import { UserValidation } from './user.validation';
 import * as bcrypt from 'bcrypt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserResponseDto } from './dto/common-user.dto';
+import removeUndefinedProperties from 'src/utils/helper/removeUndefinedProperties';
 
 @Injectable()
 export class UserService {
@@ -47,7 +52,7 @@ export class UserService {
     userId: string,
     updateUserRequestDto: UpdateUserRequestDto,
   ): Promise<UpdateUserResponseDto> {
-    const { name, password }: UpdateUserRequestDto =
+    const { username, name, password }: UpdateUserRequestDto =
       this.validationService.validate<UpdateUserRequestDto>(
         UserValidation.UPDATE,
         updateUserRequestDto,
@@ -55,14 +60,36 @@ export class UserService {
 
     const user: User = await this.findOneUserById(userId);
 
-    if (name) user.name = name;
-    if (password) user.password = await bcrypt.hash(password, 10);
+    const updatedUserData: Partial<User> = { name }; // If the name is undefined then it will be ignored by the update method
+    if (username) {
+      const ussernameExist: boolean = await this.userRepository.existsBy({
+        username,
+      });
+      if (ussernameExist && username !== user.username) {
+        throw new BadRequestException('Username already exists');
+      }
+      updatedUserData.username = username;
+    }
+    if (password) updatedUserData.password = await bcrypt.hash(password, 10);
 
-    const updateResult = await this.userRepository.save(user);
+    const updateResult: UpdateResult = await this.userRepository.update(
+      { id: user.id },
+      updatedUserData,
+    );
 
-    return {
-      username: updateResult.username,
-      name: updateResult.name,
-    };
+    if (updateResult.affected === 0) {
+      throw new InternalServerErrorException('Update failed');
+    }
+
+    const updateResponse: UpdateUserResponseDto =
+      removeUndefinedProperties<UpdateUserResponseDto>({
+        username: updatedUserData.username,
+        name: updatedUserData.name,
+        password: updatedUserData.password
+          ? 'Password successfully updated!'
+          : undefined,
+      });
+
+    return updateResponse;
   }
 }

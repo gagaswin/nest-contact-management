@@ -33,5 +33,6 @@ import { UserService } from '../user/user.service';
   ],
   controllers: [AuthController],
   providers: [UserService, AuthService, LocalStrategy, JwtStrategy],
+  exports: [AuthService, JwtModule],
 })
 export class AuthModule {}

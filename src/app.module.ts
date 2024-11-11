@@ -31,8 +31,8 @@ import { APP_GUARD } from '@nestjs/core';
         yang bisa berisiko jika terjadi perubahan yang tidak terkontrol.*/
         /* === dropSchema untuk selalu menghapus shcema dan membuatnya lagi
         ketika di re run === */
-        synchronize: true,
-        dropSchema: true,
+        // synchronize: true,
+        // dropSchema: true,
       }),
     }),
     UserModule,

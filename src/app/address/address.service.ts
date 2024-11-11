@@ -109,12 +109,8 @@ export class AddressService {
   ): Promise<AddressResponseDto> {
     const {
       id,
-      street,
-      city,
-      province,
-      postalCode,
-      country,
       contactId,
+      ...validateUpdateAddressResponseDto
     }: UpdateAddressRequestDto = this.validationService.validate(
       AddressValidation.UPDATE,
       updateAddressRequestDto,
@@ -129,9 +125,13 @@ export class AddressService {
 
     let address: Address = await this.toCheckAddressExist(contact, id);
 
+    const updateAddressData: Partial<Address> = {
+      ...validateUpdateAddressResponseDto,
+    };
+
     const updateAddress: UpdateResult = await this.addressRepository.update(
       { id: address.id, contact: contact },
-      { street, city, province, postalCode, country },
+      updateAddressData,
     );
 
     if (updateAddress.affected === 0) {
