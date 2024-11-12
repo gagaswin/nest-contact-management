@@ -18,8 +18,8 @@ import { AccessToken } from './types/AccessToken';
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  @Post('/login')
   @UseGuards(AuthGuard('local'))
+  @Post('/login')
   async login(
     @Request() loginUserRequestDto: LoginUserRequestDto,
   ): Promise<AccessToken | BadRequestException> {

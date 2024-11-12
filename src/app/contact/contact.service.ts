@@ -189,8 +189,8 @@ export class ContactService {
       .take(size)
       .getManyAndCount();
 
-    console.info('Generated query sql: ', selectQuery.getSql());
-    console.info(contacts);
+    // console.info('Generated query sql: ', selectQuery.getSql());
+    // console.info(contacts);
 
     return {
       data: contacts.map((contact) => this.toContactResponse(contact)),

@@ -11,12 +11,11 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
     super({ usernameField: 'username' }); // by default "username". but it's ok, just play safe
   }
 
-  async validate(
-    validateUserRequestDto: ValidateUserRequestDto,
-  ): Promise<User> {
-    const user: User = await this.authService.validateUser(
-      validateUserRequestDto,
-    );
+  async validate(username: string, password: string): Promise<User> {
+    const user: User = await this.authService.validateUser({
+      username,
+      password,
+    });
     if (!user) {
       throw new UnauthorizedException();
     }
