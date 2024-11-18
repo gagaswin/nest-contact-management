@@ -37,4 +37,12 @@ export class UserController {
       data: updateResult,
     };
   }
+
+  // @Patch('/logout')
+  // async logoutUser(
+  //   @UserAuth() user: IJwtPayload,
+  // ): Promise<{ message: string }> {
+  //   const logoutResult = await this.authService.logoutUser('', user.userId);
+  //   return;
+  // }
 }

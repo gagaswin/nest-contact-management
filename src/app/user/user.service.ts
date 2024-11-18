@@ -16,7 +16,6 @@ import * as bcrypt from 'bcrypt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserResponseDto } from './dto/common-user.dto';
 import removeUndefinedProperties from 'src/utils/helper/removeUndefinedProperties';
-import { LogoutUserResponseDto } from './dto/logout-user';
 
 @Injectable()
 export class UserService {
@@ -92,9 +91,5 @@ export class UserService {
       });
 
     return updateResponse;
-  }
-
-  async logout(userId: string): Promise<LogoutUserResponseDto> {
-    return;
   }
 }

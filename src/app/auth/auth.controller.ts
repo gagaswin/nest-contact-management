@@ -4,6 +4,7 @@ import {
   Controller,
   Post,
   Request,
+  UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
@@ -11,7 +12,9 @@ import { AuthGuard } from '@nestjs/passport';
 import { LoginUserRequestDto } from './dto/login-user.dto';
 import { RegisterUserRequestDto } from './dto/register-user.dto';
 import { Public } from './decorator/public.decorator';
-import { AccessToken } from './types/AccessToken';
+import { AccessToken, Tokens } from './types/Tokens';
+import { User } from '../user/entities/user.entity';
+import { RefreshTokenDto } from './dto/refresh-token.dto';
 
 @Public()
 @Controller('/api/auth')
@@ -22,20 +25,34 @@ export class AuthController {
   @Post('/login')
   async login(
     @Request() loginUserRequestDto: LoginUserRequestDto,
-  ): Promise<AccessToken | BadRequestException> {
-    const loginResult: AccessToken = await this.authService.loginUser(
+  ): Promise<Tokens | BadRequestException> {
+    const loginResult: Tokens = await this.authService.loginUser(
       loginUserRequestDto.user,
     );
+
     return loginResult;
   }
 
   @Post('/register')
   async register(
     @Body() registerUSerRequestDto: RegisterUserRequestDto,
-  ): Promise<AccessToken | BadRequestException> {
-    const registerResult: AccessToken = await this.authService.registerUser(
+  ): Promise<Tokens | BadRequestException> {
+    const registerResult: Tokens = await this.authService.registerUser(
       registerUSerRequestDto,
     );
+
     return registerResult;
+  }
+
+  @UseGuards(AuthGuard('jwt-refresh'))
+  @Post('/refresh')
+  async refreshToken(
+    @Body() refreshTokenDto: RefreshTokenDto,
+  ): Promise<AccessToken | UnauthorizedException> {
+    const { refreshToken } = refreshTokenDto;
+    const user: User =
+      await this.authService.verifyAndExtractUser(refreshToken);
+
+    return this.authService.renewAccessToken(user);
   }
 }

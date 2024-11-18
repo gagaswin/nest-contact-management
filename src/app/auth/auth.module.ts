@@ -8,31 +8,35 @@ import { UserModule } from '../user/user.module';
 import { JwtModule } from '@nestjs/jwt';
 import { LocalStrategy } from './strategy/local.strategy';
 import { JwtStrategy } from './strategy/jwt.strategy';
-import { Contact } from '../contact/entities/contact.entity';
-import { Address } from '../address/entities/address.entity';
 import { UserService } from '../user/user.service';
+import RefreshTokenStrategy from './strategy/refresh-token.strategy';
+import AuthJwtRefresh from './entities/auth-jwt-refresh.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User, Contact, Address]),
-    UserModule,
+    TypeOrmModule.forFeature([User, AuthJwtRefresh]),
     JwtModule.registerAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
         secret: configService.get<string>('JWT_SECRET'),
         signOptions: {
-          expiresIn: parseInt(
-            configService.getOrThrow<string>(
-              'ACCESS_TOKEN_VALIDITY_DURATION_IN_SEC',
-            ),
+          expiresIn: configService.getOrThrow<string>(
+            'ACCESS_TOKEN_VALIDITY_DURATION',
           ),
         },
       }),
       inject: [ConfigService],
     }),
+    UserModule,
   ],
   controllers: [AuthController],
-  providers: [UserService, AuthService, LocalStrategy, JwtStrategy],
+  providers: [
+    UserService,
+    AuthService,
+    LocalStrategy,
+    JwtStrategy,
+    RefreshTokenStrategy,
+  ],
   exports: [AuthService, JwtModule],
 })
 export class AuthModule {}
