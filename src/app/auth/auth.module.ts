@@ -11,6 +11,7 @@ import { JwtStrategy } from './strategy/jwt.strategy';
 import { UserService } from '../user/user.service';
 import RefreshTokenStrategy from './strategy/refresh-token.strategy';
 import AuthJwtRefresh from './entities/auth-jwt-refresh.entity';
+import { AuthTokenService } from './auth.token-service';
 
 @Module({
   imports: [
@@ -31,8 +32,9 @@ import AuthJwtRefresh from './entities/auth-jwt-refresh.entity';
   ],
   controllers: [AuthController],
   providers: [
-    UserService,
     AuthService,
+    AuthTokenService,
+    UserService,
     LocalStrategy,
     JwtStrategy,
     RefreshTokenStrategy,
